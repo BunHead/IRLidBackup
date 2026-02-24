@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<!-- Deploy 18 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRLid — Scan</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    :root{
+      --black:#000;
+      --white:#fff;
+      --mobile-nav-h:124px;
+      --side-pad:12px;
+      --top-gap:10px;
+    }
+
+    html,body{height:100%;}
+    body{margin:0;background:#fff;overflow-x:hidden;}
+
+    header.site-header{width:100%;background:#fff;}
+    .brand-wrap{padding:10px 14px 0;}
+    .brand{display:inline-flex;text-decoration:none;color:inherit;align-items:center;}
+
+    nav.site-nav{
+      width:100%;
+      background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:0;
+      padding:0;
+      margin:0;
+      position:sticky;
+      top:0;
+      z-index:1000;
+    }
+
+    a.nav-btn,summary.nav-btn{
+      border:0;
+      background:#000;
+      color:#fff;
+      padding:10px 14px;
+      font-weight:700;
+      border-radius:0;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    a.nav-btn:hover,summary.nav-btn:hover{background:#111;}
+
+    details.nav-dropdown{position:relative;}
+    details.nav-dropdown>summary{list-style:none;}
+    details.nav-dropdown>summary::-webkit-details-marker{display:none;}
+
+    .dropdown-menu{
+      position:absolute;
+      top:100%;
+      left:0;
+      background:#fff;
+      border:1px solid #ddd;
+      min-width:220px;
+      border-radius:0;
+      padding:0;
+      z-index:1200;
+    }
+    .dropdown-menu a{
+      display:block;
+      padding:12px;
+      font-weight:700;
+      color:#000;
+      text-decoration:none;
+    }
+    .dropdown-menu a:hover{background:#f2f2f2;}
+
+    main.page-main{
+      max-width:980px;
+      margin:0 auto;
+      padding:var(--top-gap) var(--side-pad) 20px;
+      box-sizing:border-box;
+    }
+
+    #scanner{
+      width:min(92vw,460px);
+      height:min(92vw,460px);
+      margin:14px auto 8px;
+      border:2px dashed #999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+      overflow:hidden;
+      background:#f8f8f8;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin:10px 0;
+    }
+
+    .small{text-align:center; margin:8px 0;}
+
+    #responseArea{
+      display:none;
+      text-align:center;
+      margin-top:12px;
+    }
+
+    /* Debug hidden by default */
+    #debug{
+      display:none;
+      white-space:pre-wrap;
+      font-family:monospace;
+      font-size:12px;
+      border:1px solid #ddd;
+      padding:10px;
+      margin-top:12px;
+      box-sizing:border-box;
+    }
+
+    @media(max-width:720px){
+      .brand-wrap{padding:4px var(--side-pad) 0;}
+      #logo{max-width:72vw;max-height:90px;width:auto;height:auto;display:block;}
+
+      /* ✅ Fix: explicitly unset top so fixed bar anchors to bottom */
+      nav.site-nav{
+        position:fixed;
+        top:auto; /* IMPORTANT */
+        bottom:env(safe-area-inset-bottom,0);
+        left:0;
+        right:0;
+        height:var(--mobile-nav-h);
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:1fr 1fr;
+        z-index:2000;
+      }
+
+      a.nav-btn,summary.nav-btn{
+        width:100%;
+        height:100%;
+        padding:0;
+        font-size:18px;
+      }
+
+      .dropdown-menu{
+        position:fixed;
+        left:0;
+        right:0;
+        top:auto;
+        bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom,0));
+      }
+
+      body{
+        padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom,0));
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="brand-wrap">
+    <a class="brand" href="index.html" aria-label="IRLid Home">
+      <img src="logo.png" alt="IRLid Logo" id="logo">
+    </a>
+  </div>
+
+  <nav class="site-nav" aria-label="Primary">
+    <a class="nav-btn" href="index.html">Home</a>
+    <a class="nav-btn" href="application.html">Scan</a>
+
+    <details class="nav-dropdown">
+      <summary class="nav-btn">About ▼</summary>
+      <div class="dropdown-menu" role="menu" aria-label="About menu">
+        <a href="about.html">About</a>
+        <a href="features.html">Features</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </details>
+
+    <a class="nav-btn" href="receipt.html">Receipts</a>
+  </nav>
+</header>
+
+<main class="page-main">
+  <p id="status" class="small">Ready.</p>
+
+  <div class="controls">
+    <button class="btn" id="startBtn">Start Scanner</button>
+    <button class="btn secondary" id="stopBtn">Stop</button>
+  </div>
+
+  <div id="scanner"></div>
+
+  <div class="small">
+    <label for="cameraSelect"><b>Camera:</b></label><br>
+    <select id="cameraSelect"></select>
+  </div>
+
+  <div id="responseArea">
+    <h3>Your Response QR</h3>
+    <div class="qr-box" id="responseQr"></div>
+    <div class="controls">
+      <button class="btn secondary" id="scanResponseBtn">Scan Their Response</button>
+    </div>
+  </div>
+
+  <div id="debug"></div>
+</main>
+
+<script src="js/sign.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="js/qr.js?v=layout10"></script>
+
+<script>
+  const debugMode = new URLSearchParams(location.search).get("debug") === "1";
+  const debugEl = document.getElementById("debug");
+  if (debugMode) debugEl.style.display = "block";
+
+  function log(...args){
+    if (!debugMode) return;
+    debugEl.textContent += "\n" + args.map(a => typeof a === "string" ? a : JSON.stringify(a)).join(" ");
+  }
+
+  const statusEl = document.getElementById("status");
+  const cameraSelect = document.getElementById("cameraSelect");
+  const responseArea = document.getElementById("responseArea");
+
+  let scanner = null;
+
+  function setStatus(s){ statusEl.textContent = s; }
+
+  async function sha256(dataBytes){
+    const buf = (dataBytes instanceof Uint8Array) ? dataBytes.buffer : dataBytes;
+    return crypto.subtle.digest("SHA-256", buf);
+  }
+
+  async function signBytes(hashBuf){
+    const priv = await getPrivateKey();
+    const sig = await crypto.subtle.sign(
+      { name:"ECDSA", hash:"SHA-256" },
+      priv,
+      hashBuf
+    );
+    return b64urlEncode(new Uint8Array(sig));
+  }
+
+  function pickRearCameraIndex(devices){
+    const re = /(back|rear|environment)/i;
+    const idx = devices.findIndex(d => re.test(d.label || ""));
+    return idx >= 0 ? idx : 0;
+  }
+
+  async function listCameras(){
+    try{
+      const devices = await Html5Qrcode.getCameras();
+      cameraSelect.innerHTML = "";
+      devices.forEach((d,i)=>{
+        const opt = document.createElement("option");
+        opt.value = d.id;
+        opt.textContent = d.label || `Camera ${i+1}`;
+        cameraSelect.appendChild(opt);
+      });
+      if (devices.length) cameraSelect.selectedIndex = pickRearCameraIndex(devices);
+      return devices;
+    } catch(e){
+      log("Camera list error:", String(e));
+      return [];
+    }
+  }
+
+  async function startScanner(handler){
+    await stopScanner();
+    scanner = new Html5Qrcode("scanner");
+
+    const cam = cameraSelect.value || { facingMode: { ideal:"environment" } };
+
+    try{
+      await scanner.start(cam, { fps:10, qrbox:320 }, handler, () => {});
+    } catch(e){
+      log("Start error:", String(e));
+      setStatus("Scanner failed to start.");
+    }
+  }
+
+  async function stopScanner(){
+    try{
+      if (!scanner) return;
+      await scanner.stop();
+      await scanner.clear();
+      scanner = null;
+    } catch(e){
+      log("Stop error:", String(e));
+    }
+  }
+
+  function decodeHelloFromUrl(text){
+    try{
+      const u = new URL(text);
+      const hash = u.hash || "";
+      const m = hash.match(/HELLO=([A-Za-z0-9\-_]+)/);
+      if (!m) return null;
+      const bytes = b64urlDecode(m[1]);
+      return JSON.parse(new TextDecoder().decode(bytes));
+    } catch {
+      return null;
+    }
+  }
+
+  function decodeB64Json(text){
+    try{
+      const bytes = b64urlDecode(text);
+      return JSON.parse(new TextDecoder().decode(bytes));
+    } catch {
+      return null;
+    }
+  }
+
+  function decodeAny(text){
+    const hello = decodeHelloFromUrl(text);
+    if (hello) return hello;
+    const obj = decodeB64Json(text);
+    if (obj) return obj;
+    return null;
+  }
+
+  async function handleResponse(text){
+    const obj = decodeB64Json(text);
+    if (!obj || obj.type !== "response"){
+      setStatus("Not a Response QR.");
+      return;
+    }
+    localStorage.setItem("irlid_last_receipt", JSON.stringify(obj));
+    setStatus("Saved. Open Receipts.");
+    await stopScanner();
+  }
+
+  async function getGPS(){
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy }),
+        () => resolve(null),
+        { enableHighAccuracy:true, timeout:6000, maximumAge:0 }
+      );
+    });
+  }
+
+  async function handleHello(text){
+    const obj = decodeAny(text);
+
+    if (obj && obj.type === "response") {
+      setStatus("Response detected. Saving receipt…");
+      await handleResponse(text);
+      return;
+    }
+
+    if (!obj || obj.type !== "hello"){
+      setStatus("Not a HELLO QR.");
+      return;
+    }
+
+    const hello = obj;
+
+    setStatus("HELLO scanned. Creating response…");
+
+    const myPub = await getPublicJwk();
+    const ordered = [myPub, hello.pub].sort((a,b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+
+    const gps = await getGPS();
+    const ts = Math.floor(Date.now()/1000);
+
+    const payload = { v:1, type:"meeting", pubs: ordered, gps, ts };
+
+    const payloadBytes = new TextEncoder().encode(JSON.stringify(payload));
+    const hash = await sha256(payloadBytes);
+    const sig = await signBytes(hash);
+
+    const response = {
+      v:1,
+      type:"response",
+      payload,
+      hash: b64urlEncode(new Uint8Array(hash)),
+      sig,
+      pub: myPub
+    };
+
+    const encoded = b64urlEncode(new TextEncoder().encode(JSON.stringify(response)));
+    makeQR("responseQr", encoded, 360);
+
+    responseArea.style.display = "block";
+    setStatus("Show your Response QR, then tap “Scan Their Response”.");
+    log("Response created:", response);
+
+    await stopScanner();
+  }
+
+  document.getElementById("startBtn").onclick = async () => {
+    setStatus("Starting scanner…");
+    await startScanner(handleHello);
+    setStatus("Scan the other person's HELLO QR.");
+  };
+
+  document.getElementById("stopBtn").onclick = async () => {
+    await stopScanner();
+    setStatus("Stopped.");
+  };
+
+  document.getElementById("scanResponseBtn").onclick = async () => {
+    setStatus("Starting scanner for their Response…");
+    await startScanner(handleResponse);
+    setStatus("Scan their Response QR.");
+  };
+
+  (async () => {
+    await listCameras();
+    setStatus("Ready. Tap Start Scanner to scan a HELLO QR.");
+  })();
+</script>
+
+</body>
+</html>

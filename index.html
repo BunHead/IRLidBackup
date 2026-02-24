@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<!-- Deploy 18 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRLid — Proof of Personhood</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    :root{
+      --black:#000;
+      --white:#fff;
+
+      --mobile-nav-h: 124px;
+      --side-pad: 12px;
+      --qr-top-gap: 8px;
+    }
+
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      background: #fff;
+      overflow-x: hidden;
+    }
+
+    /* ===== Desktop header/logo + full-width nav bar ===== */
+    header.site-header{
+      width: 100%;
+      background: #fff;
+    }
+
+    .brand-wrap{
+      width: 100%;
+      padding: 10px 14px 0 14px;
+    }
+
+    .brand{
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    nav.site-nav{
+      width: 100%;
+      background: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0;
+      padding: 0;
+      margin: 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    a.nav-btn, summary.nav-btn{
+      appearance:none;
+      -webkit-appearance:none;
+      border: 0;
+      background: var(--black);
+      color: var(--white);
+      text-decoration:none;
+      font: inherit;
+      font-weight: 700;
+      border-radius: 0;
+      margin: 0;
+      padding: 10px 12px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    a.nav-btn:hover, summary.nav-btn:hover{ background:#111; }
+    a.nav-btn:active, summary.nav-btn:active{ background:#222; }
+    a.nav-btn:focus, summary.nav-btn:focus{ outline: 2px solid #555; outline-offset: -2px; }
+
+    details.nav-dropdown{ position: relative; }
+    details.nav-dropdown > summary{ list-style:none; }
+    details.nav-dropdown > summary::-webkit-details-marker{ display:none; }
+
+    .dropdown-menu{
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 0;
+      padding: 0;
+      min-width: 220px;
+      z-index: 1200;
+    }
+    .dropdown-menu a{
+      display: block;
+      padding: 12px 12px;
+      text-decoration: none;
+      color: #000;
+      font-weight: 700;
+      border-radius: 0;
+      margin: 0;
+    }
+    .dropdown-menu a:hover{ background: #f2f2f2; }
+
+    /* ===== Main: QR only (equal side padding) ===== */
+    main.home-main{
+      width: 100%;
+      box-sizing: border-box;
+      padding: var(--qr-top-gap) var(--side-pad) 0 var(--side-pad);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .qr-box{
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .qr-box canvas, .qr-box img{
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+    }
+
+    #qrError{
+      display:none;
+      margin: 8px var(--side-pad) 0 var(--side-pad);
+      padding: 10px;
+      border: 1px solid #f3c0c0;
+      background: #fff3f3;
+      color: #600;
+      font-family: ui-monospace, monospace;
+      white-space: pre-wrap;
+      box-sizing: border-box;
+    }
+
+    /* ===== Mobile: fixed bottom 2x2 nav ===== */
+    @media (max-width: 720px){
+      :root{ --qr-top-gap: 2px; }
+
+      .brand-wrap{
+        padding: 4px var(--side-pad) 0 var(--side-pad);
+      }
+      #logo{
+        max-width: 72vw;
+        max-height: 90px;
+        width: auto;
+        height: auto;
+        display: block;
+      }
+
+      nav.site-nav{
+        position: fixed;
+        top: auto; /* IMPORTANT: ensures it snaps to bottom */
+        bottom: env(safe-area-inset-bottom, 0px);
+        left: 0;
+        right: 0;
+        height: var(--mobile-nav-h);
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        background: var(--black);
+        z-index: 2000;
+      }
+
+      a.nav-btn, summary.nav-btn{
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border-radius: 0;
+        font-size: 18px;
+      }
+
+      .dropdown-menu{
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: calc(var(--mobile-nav-h) + env(safe-area-inset-bottom, 0px));
+        border-radius: 0;
+      }
+
+      body{
+        padding-bottom: calc(var(--mobile-nav-h) + env(safe-area-inset-bottom, 0px));
+      }
+
+      main.home-main{
+        min-height: calc(100vh - (var(--mobile-nav-h) + env(safe-area-inset-bottom, 0px)));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="brand-wrap">
+      <a class="brand" href="index.html" aria-label="IRLid Home">
+        <img src="logo.png" alt="IRLid Logo" id="logo">
+      </a>
+    </div>
+
+    <nav class="site-nav" aria-label="Primary">
+      <a class="nav-btn" href="index.html">Home</a>
+      <a class="nav-btn" href="application.html">Scan</a>
+
+      <details class="nav-dropdown">
+        <summary class="nav-btn">About ▼</summary>
+        <div class="dropdown-menu" role="menu" aria-label="About menu">
+          <a href="about.html">About</a>
+          <a href="features.html">Features</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </details>
+
+      <a class="nav-btn" href="receipt.html">Receipts</a>
+    </nav>
+  </header>
+
+  <div id="qrError"></div>
+
+  <main class="home-main">
+    <div class="qr-box" id="myQr" aria-label="Your IRLid HELLO QR"></div>
+  </main>
+
+  <script src="js/sign.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="js/qr.js?v=layout10"></script>
+
+  <script>
+    const qrErrorEl = document.getElementById("qrError");
+    function showErr(e){
+      qrErrorEl.style.display = "block";
+      qrErrorEl.textContent = String(e && (e.stack || e.message) ? (e.stack || e.message) : e);
+      console.error(e);
+    }
+    window.addEventListener("error", (e) => showErr(e.error || e.message));
+    window.addEventListener("unhandledrejection", (e) => showErr(e.reason || e));
+
+    function computeQrSize(){
+      const box = document.getElementById("myQr");
+      const boxW = box.clientWidth || Math.min(window.innerWidth - 24, 720);
+
+      const header = document.querySelector("header.site-header");
+      const headerH = header ? header.getBoundingClientRect().height : 0;
+
+      const isMobile = window.matchMedia("(max-width: 720px)").matches;
+
+      const nav = document.querySelector("nav.site-nav");
+      const navH = nav ? nav.getBoundingClientRect().height : 0;
+
+      const vv = window.visualViewport;
+      const viewportH = vv ? vv.height : window.innerHeight;
+
+      const pad = isMobile ? 16 : 40;
+
+      const availH = Math.max(220, viewportH - headerH - (isMobile ? navH : 0) - pad);
+      const size = Math.floor(Math.min(boxW, availH));
+      return Math.max(220, Math.min(size, 900));
+    }
+
+    async function renderHelloQr(){
+      try {
+        const pub = await getPublicJwk();
+        const hello = {
+          v: 1,
+          type: "hello",
+          pub,
+          nonce: crypto.getRandomValues(new Uint32Array(1))[0],
+          ts: Math.floor(Date.now() / 1000)
+        };
+
+        const encodedHello = b64urlEncode(new TextEncoder().encode(JSON.stringify(hello)));
+        const baseUrl = location.origin;
+        const url = `${baseUrl}/IRLid/application.html#HELLO=${encodedHello}`;
+
+        const size = computeQrSize();
+        makeQR("myQr", url, size);
+      } catch (e) {
+        showErr(e);
+      }
+    }
+
+    renderHelloQr();
+
+    const rerender = () => {
+      clearTimeout(window.__irlid_qr_t);
+      window.__irlid_qr_t = setTimeout(renderHelloQr, 120);
+    };
+    window.addEventListener("resize", rerender);
+    window.addEventListener("orientationchange", rerender);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", rerender);
+      window.visualViewport.addEventListener("scroll", rerender);
+    }
+  </script>
+</body>
+</html>
