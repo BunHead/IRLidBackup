@@ -283,7 +283,7 @@
 
         const encodedHello = b64urlEncode(new TextEncoder().encode(JSON.stringify(hello)));
         const baseUrl = location.origin;
-        const url = `${baseUrl}/IRLid/application.html#HELLO=${encodedHello}`;
+        const url = `${baseUrl}/IRLidBackup/application.html#HELLO=${encodedHello}`;
 
         const size = computeQrSize();
         makeQR("myQr", url, size);
@@ -307,4 +307,5 @@
   </script>
 </body>
 </html>
+
 
