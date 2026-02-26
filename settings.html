@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<!-- Deploy 67 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRLid — Settings</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .settings-wrap{ max-width: 860px; margin: 0 auto; }
+    .settings-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .settings-row label{ display:flex; gap:10px; align-items:center; }
+    .settings-kv{ font-size: 13px; opacity: .9; margin-top: 8px; }
+    .settings-kv code{ font-size: 12px; }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="brand-wrap">
+      <a class="brand" href="index.html" aria-label="IRLid Home">
+        <img src="logo.png" alt="IRLid Logo" id="logo" onerror="this.style.display='none'">
+      </a>
+    </div>
+
+    <nav class="site-nav" aria-label="Primary">
+      <a class="nav-btn" href="index.html">Home</a>
+      <a class="nav-btn" href="application.html">Scan</a>
+
+      <details class="nav-dropdown" id="aboutDropdown">
+        <summary class="nav-btn">About ▼</summary>
+        <div class="dropdown-menu" role="menu" aria-label="About menu">
+          <a href="about.html">About</a>
+          <a href="features.html">Features</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </details>
+
+      <span id="accountSlot"></span>
+    </nav>
+  </header>
+
+  <main class="page-main">
+    <div class="settings-wrap">
+      <h2 style="margin: 6px 0 10px;">Settings</h2>
+
+      <div class="panel">
+        <div class="settings-row">
+          <label for="debugToggle">
+            <input type="checkbox" id="debugToggle" />
+            <span><b>Debug mode</b></span>
+          </label>
+        </div>
+
+        <div class="settings-kv" id="debugHelp">
+          When enabled, extra recovery controls appear (like <i>Clear local data</i> buttons).
+        </div>
+
+        <div class="settings-kv" id="debugState"></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin: 0 0 8px;">Data</h3>
+        <p class="small" style="margin: 0 0 10px;">
+          All data is stored locally in your browser (no backend). Clearing data cannot be undone.
+        </p>
+        <div class="controls" style="justify-content:flex-start; gap:10px;">
+          <button class="btn secondary" id="clearLocalBtn" type="button">Clear local data</button>
+          <button class="btn secondary" id="clearReceiptsBtn" type="button">Clear receipts only</button>
+        </div>
+      </div>
+
+      <div class="panel" id="identityPanel">
+        <h3 style="margin: 0 0 8px;">Identity</h3>
+        <p class="small" style="margin: 0 0 8px;">
+          Your signing key is stored on-device. This page shows a short identifier for debugging.
+        </p>
+        <div class="settings-kv" id="pubKeyIdLine">Loading…</div>
+      </div>
+
+      <div class="panel" id="loginHint" style="display:none;">
+        <b>Note:</b> You appear to be logged out. Some UI (like the account menu) may differ.
+        <div style="margin-top:10px;">
+          <a class="btn" href="login.html">Login</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/sign.js"></script>
+
+  <script>
+    const KEY_DEBUG = "irlid_debug";
+    const debugToggle = document.getElementById("debugToggle");
+    const debugState = document.getElementById("debugState");
+    const clearLocalBtn = document.getElementById("clearLocalBtn");
+    const clearReceiptsBtn = document.getElementById("clearReceiptsBtn");
+    const pubKeyIdLine = document.getElementById("pubKeyIdLine");
+    const loginHint = document.getElementById("loginHint");
+
+    function isDebug(){
+      try{
+        const qs = new URLSearchParams(location.search || "");
+        const qd = qs.get("debug");
+        if (qd === "1" || qd === "true") return true;
+      }catch{}
+      try{
+        const v = localStorage.getItem(KEY_DEBUG);
+        if (v === "1" || v === "true") return true;
+      }catch{}
+      try{
+        const h = location.hash || "";
+        if (/(?:^|[#&])DEBUG=(1|true)(?:&|$)/i.test(h)) return true;
+      }catch{}
+      return false;
+    }
+
+    function setDebug(on){
+      try{ localStorage.setItem(KEY_DEBUG, on ? "1" : "0"); }catch{}
+    }
+
+    function renderDebugState(){
+      const on = isDebug();
+      if (debugToggle) debugToggle.checked = on;
+      const mode = on ? "ON" : "OFF";
+      const urlHint = on
+        ? "Tip: You can also use ?debug=1 in the URL."
+        : "Tip: Turn this on to show recovery buttons across the app.";
+      debugState.innerHTML = `Debug mode: <b>${mode}</b><br><span style="opacity:.85;">${urlHint}</span>`;
+    }
+
+    function clearLocalData(){
+      const keys = [
+        // handshake/session
+        "irlid_last_hello_b64",
+        "irlid_last_self_response",
+        "irlid_preferred_camera_id",
+
+        // receipts
+        "irlid_resp_self",
+        "irlid_resp_other",
+        "irlid_receipts",
+        "irlid_receipt_last",
+
+        // auth/session
+        "irl_auth",
+        "irl_auth_user",
+
+        // NOTE: leave debug flag alone (so you don't lose recovery UI)
+      ];
+      for (const k of keys) {
+        try{ localStorage.removeItem(k); }catch{}
+      }
+    }
+
+    function clearReceiptsOnly(){
+      const keys = [
+        "irlid_resp_self",
+        "irlid_resp_other",
+        "irlid_receipts",
+        "irlid_receipt_last"
+      ];
+      for (const k of keys) {
+        try{ localStorage.removeItem(k); }catch{}
+      }
+    }
+
+    async function renderKeyId(){
+      try{
+        if (typeof getPublicJwk !== "function" || typeof pubKeyId !== "function") {
+          pubKeyIdLine.textContent = "Public key ID unavailable (missing sign.js helpers).";
+          return;
+        }
+        const pub = await getPublicJwk();
+        const id = await pubKeyId(pub);
+        pubKeyIdLine.innerHTML = `Key ID: <code>${id}</code>`;
+      } catch (e) {
+        pubKeyIdLine.textContent = "Key ID unavailable.";
+        console.error(e);
+      }
+    }
+
+    // Wire UI
+    renderDebugState();
+    renderKeyId();
+
+    if (debugToggle) {
+      debugToggle.addEventListener("change", () => {
+        setDebug(!!debugToggle.checked);
+        renderDebugState();
+      });
+    }
+
+    if (clearLocalBtn) {
+      clearLocalBtn.addEventListener("click", () => {
+        const ok = confirm("Clear local data on this device? This cannot be undone.");
+        if (!ok) return;
+        clearLocalData();
+        alert("Local data cleared.");
+      });
+    }
+
+    if (clearReceiptsBtn) {
+      clearReceiptsBtn.addEventListener("click", () => {
+        const ok = confirm("Clear stored receipts on this device? This cannot be undone.");
+        if (!ok) return;
+        clearReceiptsOnly();
+        alert("Receipts cleared.");
+      });
+    }
+
+    // Soft hint if logged out
+    (function(){
+      try{
+        if (window.IRLAuth && typeof window.IRLAuth.isLoggedIn === "function") {
+          if (!window.IRLAuth.isLoggedIn()) loginHint.style.display = "block";
+        }
+      }catch{}
+    })();
+  </script>
+</body>
+</html>

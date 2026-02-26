@@ -1,123 +1,28 @@
+<!-- scan.html -->
 <!DOCTYPE html>
-<!-- Deploy 8 -->
+<!-- Deploy 61 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IRLid – Scan</title>
+  <title>IRLid — Scan (Legacy)</title>
   <link rel="stylesheet" href="css/style.css">
-
-  <style>
-    :root {
-      --nav-h: 64px;
-      --nav-bg: rgba(255,255,255,0.92);
-      --nav-border: rgba(0,0,0,0.10);
-      --nav-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      --nav-radius: 14px;
-      --nav-text: #111;
-      --nav-btn-bg: rgba(0,0,0,0.04);
-    }
-    header.site-header {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 14px 12px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .brand { display:inline-flex; align-items:center; text-decoration:none; color:inherit; }
-    nav.site-nav {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--nav-bg);
-      border: 1px solid var(--nav-border);
-      border-radius: var(--nav-radius);
-      padding: 8px;
-      box-shadow: var(--nav-shadow);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    a.nav-btn, summary.nav-btn {
-      border: 0;
-      background: var(--nav-btn-bg);
-      color: var(--nav-text);
-      text-decoration: none;
-      font: inherit;
-      font-weight: 600;
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 96px;
-      user-select: none;
-      white-space: nowrap;
-    }
-    details.nav-dropdown { position: relative; }
-    details.nav-dropdown > summary { list-style:none; }
-    details.nav-dropdown > summary::-webkit-details-marker { display:none; }
-    .dropdown-menu {
-      position:absolute;
-      top: calc(100% + 8px);
-      right:0;
-      background: var(--nav-bg);
-      border: 1px solid var(--nav-border);
-      border-radius: 14px;
-      box-shadow: var(--nav-shadow);
-      padding: 8px;
-      min-width: 200px;
-      z-index: 50;
-    }
-    .dropdown-menu a {
-      display:block;
-      padding: 10px 12px;
-      border-radius: 12px;
-      text-decoration:none;
-      color: var(--nav-text);
-      font-weight: 600;
-    }
-    .dropdown-menu a:hover { background: rgba(0,0,0,0.05); }
-
-    @media (max-width: 720px) {
-      header.site-header { padding: 12px 12px 0; justify-content:center; }
-      nav.site-nav {
-        position: fixed;
-        left: 10px; right: 10px; bottom: 10px;
-        height: var(--nav-h);
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        gap: 8px;
-        padding: 8px;
-        border-radius: 18px;
-      }
-      a.nav-btn, summary.nav-btn { min-width:0; width:100%; padding:10px 8px; border-radius:14px; font-size:14px; }
-      .dropdown-menu {
-        bottom: calc(var(--nav-h) + 14px);
-        top: auto;
-        right: 0; left: 0;
-        margin: 0 auto;
-        width: min(360px, calc(100vw - 24px));
-      }
-      body { padding-bottom: calc(var(--nav-h) + 28px); }
-    }
-  </style>
 </head>
 
 <body>
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="IRLid Home">
-      <img src="logo.png" alt="IRLid Logo" id="logo">
-    </a>
+    <div class="brand-wrap">
+      <a class="brand" href="index.html" aria-label="IRLid Home">
+        <img src="logo.png" alt="IRLid Logo" id="logo">
+      </a>
+    </div>
 
     <nav class="site-nav" aria-label="Primary">
       <a class="nav-btn" href="index.html">Home</a>
       <a class="nav-btn" href="application.html">Scan</a>
 
-      <details class="nav-dropdown">
-        <summary class="nav-btn">About ▾</summary>
+      <details class="nav-dropdown" id="aboutDropdown">
+        <summary class="nav-btn">About ▼</summary>
         <div class="dropdown-menu" role="menu" aria-label="About menu">
           <a href="about.html">About</a>
           <a href="features.html">Features</a>
@@ -125,30 +30,35 @@
         </div>
       </details>
 
-      <a class="nav-btn" href="receipt.html">Receipts</a>
+      <span id="accountSlot"></span>
     </nav>
   </header>
 
-  <main>
+  <main class="page-main">
     <h2>Scan the other person</h2>
-    <p id="status">Step 1: Scan their QR.</p>
+    <p id="status">This is a legacy page. Use the main <a href="application.html">Scan</a> flow.</p>
 
-    <div id="scanner" style="width:360px; margin: 0 auto;"></div>
+    <div id="scanner"></div>
 
     <div id="responseArea" style="display:none;">
       <h3>Your Response QR</h3>
       <div class="qr-box" id="responseQr"></div>
       <button class="btn secondary" id="scanResponseBtn">Scan Their Response</button>
     </div>
+
+    <p class="small" style="margin-top:12px;">
+      Note: This page is kept for backwards compatibility. The supported handshake flow is in <b>application.html</b>.
+    </p>
   </main>
 
-  <footer>
+  <footer class="small" style="text-align:center; padding: 10px 0;">
     IRLid — Proof of Personhood (Demo)
   </footer>
 
+  <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
   <script src="js/sign.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="js/qr.js?v=deploy6"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="js/qr.js?v=59"></script>
 </body>
 </html>

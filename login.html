@@ -1,0 +1,130 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<!-- Deploy 61 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRLid — Login</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="brand-wrap">
+      <a class="brand" href="index.html" aria-label="IRLid Home">
+        <img src="logo.png" alt="IRLid Logo" id="logo">
+      </a>
+    </div>
+
+    <nav class="site-nav" aria-label="Primary">
+      <a class="nav-btn" href="index.html">Home</a>
+      <a class="nav-btn" href="application.html">Scan</a>
+
+      <details class="nav-dropdown" id="aboutDropdown">
+        <summary class="nav-btn">About ▼</summary>
+        <div class="dropdown-menu" role="menu" aria-label="About menu">
+          <a href="about.html">About</a>
+          <a href="features.html">Features</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </details>
+
+      <!-- Account slot: becomes Login (logged out) OR Name... dropdown (logged in) -->
+      <span id="accountSlot"></span>
+    </nav>
+  </header>
+
+  <main class="page-main">
+    <h2 class="page-title-center">Login (Passkeys)</h2>
+
+    <div class="card">
+      <p class="mt0">
+        This login is <b>device-local</b> (no backend). It uses a passkey (WebAuthn) stored by your device,
+        then keeps a local “logged in” flag in your browser storage.
+      </p>
+
+      <div class="btnrow">
+        <button class="btn" id="createBtn">Create passkey</button>
+        <button class="btn" id="loginBtn">Login with passkey</button>
+        <button class="btn secondary" id="logoutBtn">Logout</button>
+      </div>
+
+      <div class="statusBox" id="statusBox">Status: Checking…</div>
+
+      <p class="mb0">
+        Tip: If your device supports it, “Create passkey” will use Face ID / Touch ID / Windows Hello.
+        If this page says WebAuthn is unavailable, make sure you are on HTTPS (GitHub Pages is fine).
+      </p>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
+
+  <script>
+    const statusBox = document.getElementById("statusBox");
+    const createBtn = document.getElementById("createBtn");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function showStatus(objOrStr){
+      if (typeof objOrStr === "string") {
+        statusBox.textContent = objOrStr;
+        return;
+      }
+      statusBox.textContent = "Status: " + (objOrStr && objOrStr.isLoggedIn ? "Logged in" : "Logged out") + "\n\n" +
+        "webauthnSupported: " + (objOrStr ? objOrStr.webauthnSupported : "?") + "\n" +
+        "platformAuthenticatorAvailable: " + (objOrStr ? objOrStr.platformAuthenticatorAvailable : "?") + "\n" +
+        "hasPasskey: " + (objOrStr ? objOrStr.hasPasskey : "?") + "\n" +
+        "isLoggedIn: " + (objOrStr ? objOrStr.isLoggedIn : "?") + "\n" +
+        "credentialId: " + (objOrStr ? (objOrStr.credentialId || "") : "");
+    }
+
+    async function refresh(){
+      try{
+        if (!window.IRLAuth) throw new Error("IRLAuth missing (js/auth.js not loaded)");
+        const st = await window.IRLAuth.getStatus();
+        showStatus(st);
+      }catch(e){
+        showStatus("Status: Error\n\n" + String(e && e.stack ? e.stack : e));
+      }
+    }
+
+    createBtn.addEventListener("click", async () => {
+      try{
+        showStatus("Status: Creating passkey…");
+        await window.IRLAuth.registerPasskey();
+      }catch(e){
+        showStatus("Status: Error\n\n" + String(e && e.stack ? e.stack : e));
+      } finally {
+        await refresh();
+      }
+    });
+
+    loginBtn.addEventListener("click", async () => {
+      try{
+        showStatus("Status: Logging in…");
+        await window.IRLAuth.loginWithPasskey();
+      }catch(e){
+        showStatus("Status: Error\n\n" + String(e && e.stack ? e.stack : e));
+      } finally {
+        await refresh();
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try{
+        showStatus("Status: Logging out…");
+        await window.IRLAuth.logout();
+      }catch(e){
+        showStatus("Status: Error\n\n" + String(e && e.stack ? e.stack : e));
+      } finally {
+        await refresh();
+      }
+    });
+
+    refresh();
+  </script>
+</body>
+</html>
